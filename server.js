@@ -13,7 +13,7 @@ const connection = mysql.createConnection({
     database: 'employeetracker',
   });
 
-  const start = () => {
+const start = () => {
     inquirer
       .prompt({
         name: 'startMenu',
@@ -34,7 +34,7 @@ const connection = mysql.createConnection({
 
         } else if (answer.startMenu === 'Add Employee') {
             console.log("add")
-
+            addEmployee()
         } else if (answer.startMenu === 'Remove Employee') {
             console.log("remove")
 
@@ -50,23 +50,63 @@ const viewAll = () => {
         if (err) throw err;
         console.log(res)
         
-        console.table([
-            res
-        ])
+        // console.table([
+        //     res
+        // ])
         
     })
 
 }
 
+const addEmployee = () => {
 
+inquirer
+    .prompt([
+      {
+        name: 'firstName',
+        type: 'input',
+        message: 'What is the employees first name?',
+      },
+      {
+        name: 'lastName',
+        type: 'input',
+        message: 'What is the employees last name?',
+      },
+      {
+        name: 'roleID',
+        type: 'input',
+        message: 'What is the employees role? (use role ID)',
+      },
+    //   {
+    //     name: 'managerID',
+    //     type: 'input',
+    //     message: 'Who is the employees Manager? (use managers ID/if they dont have one, leave it blank)',
+    //   },
+    ])
+    .then((answer) => {
+      
+      connection.query(
+        'INSERT INTO employee SET ?',
+        
+        {
+          firstName: answer.firstName,
+          lastName: answer.lastName,
+          roleID: answer.roleID,
+        //   managerID: answer.managerID,
+        },
+        (err) => {
+          if (err) throw err;
+          console.log('The employee was made successfully');
+          
+          start()
+        }
+      );
+    });
+};
 
-
-
-
-
-  // connect to the mysql server and sql database
+  
 connection.connect((err) => {
     if (err) throw err;
-    // run the start function after the connection is made to prompt the user
+    
     start()
   });
