@@ -13,6 +13,8 @@ const connection = mysql.createConnection({
     database: 'employeetracker',
   });
 
+
+
 const start = () => {
     inquirer
       .prompt({
@@ -58,11 +60,11 @@ const viewAll = () => {
 
     connection.query("SELECT * FROM employee", (err, res) => {
         if (err) throw err;
-        console.log(res)
+        // console.log(res)
         
-        // console.table([
-        //     res
-        // ])
+        console.table(res)
+            
+        
         
     })
 
@@ -130,8 +132,8 @@ const removeEmployee = () => {
                  type: "rawlist",
                  choices() {
                      const choiceArray = []
-                     results.forEach(({ firstName }) => {
-                         choiceArray.push(firstName)
+                     results.forEach(({ firstName, lastName, employeeID, roleID, managerID }) => {
+                         choiceArray.push(employeeID +" "+ firstName +" "+ lastName +" "+ roleID +" "+ managerID)
                      })
                      return choiceArray
                  },
@@ -139,23 +141,23 @@ const removeEmployee = () => {
              }
          ])
          .then((answer) => {
-        
+            console.log(answer)
                 results.forEach((employee) => {
-                    if (employee.firstName === answer.choice) {
+                    if (employee === answer) {
                         console.log("correct")
-                        connection.query(
-                        "DELETE FROM employee WHERE ?",
-                        [
-                            {
-                                firstName: answer.choice
-                            }
-                        ],
-                        (error) => {
-                            if (error) throw err;
-                            console.log('employee deleted successfully');
-                            start();
-                        }
-                        )
+                        // connection.query(
+                        // "DELETE FROM employee WHERE ?",
+                        // [
+                        //     {
+                        //         firstName: answer.choice
+                        //     }
+                        // ],
+                        // (error) => {
+                        //     if (error) throw err;
+                        //     console.log('employee deleted successfully');
+                        //     start();
+                        // }
+                        // )
                     }
                 }) 
             })
@@ -231,10 +233,44 @@ const addRole = () => {
 }
 
 const updateER = () => {
+    connection.query('SELECT * FROM employee', (err, results) => {
+        if (err) throw err;
+
+
+
+    inquirer
+    .prompt([
+      {
+        name: 'update',
+        type: 'input',
+        message: 'Which employee do you want to update roles for?',
+      },
+    ])
+
+
+    .then((answer) => {
     
+      connection.query(
+        'UPDATE employee ',
+        
+        {
+          title: answer.roleName,
+          salary: answer.roleSalary,
+          departmentID: answer.roleDepartment
+        },
+        (err) => {
+          if (err) throw err;
+          console.log('The role was made successfully');
+          
+          start()
+        }
+      );
+    });
+})
 }
 
 connection.connect((err) => {
     if (err) throw err;
     start()
+    
   })
