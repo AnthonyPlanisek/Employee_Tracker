@@ -1,7 +1,7 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
-
+const figlet = require('figlet');
 const connection = mysql.createConnection({
     host: 'localhost',
   
@@ -13,27 +13,36 @@ const connection = mysql.createConnection({
     database: 'employeetracker',
   });
 
-
+//   figlet('Hello World!!', function(err, data) {
+//     if (err) {
+//         console.log('Something went wrong...');
+//         console.dir(err);
+//         return;
+//     }
+//     console.log(data)
+// });
 
 const start = () => {
+
+    
     inquirer
       .prompt({
         name: 'startMenu',
         type: 'list',
         message: 'What would like to do? (use arrow keys)',
-        choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'Add Employee', 'Remove Employee', 'Add Department', 'Add Role', 'EXIT'],
+        choices: ['View All Employees', 'View All Departments', 'View All Roles', 'Add Employee', 'Remove Employee', 'Add Department', 'Add Role', 'EXIT'],
       })
       .then((answer) => {
         
         if (answer.startMenu === 'View All Employees') {
             console.log("view All")
             viewAll()
-        } else if (answer.startMenu === 'View All Employees By Department') {
+        } else if (answer.startMenu === 'View All Departments') {
             console.log("view D")
-
-        } else if (answer.startMenu === 'View All Employees By Manager') {
+            viewDepartments()
+        } else if (answer.startMenu === 'View All Roles') {
             console.log("view M")
-
+            viewRoles()
         } else if (answer.startMenu === 'Add Employee') {
             console.log("addE")
             addEmployee()
@@ -70,7 +79,7 @@ const viewAll = () => {
 
 }
 
-const addEmployee = () => {
+const addEmployee = () => { //required - DONE
 
 inquirer
     .prompt([
@@ -121,7 +130,7 @@ inquirer
     });
 }
 
-const removeEmployee = () => {
+const removeEmployee = () => { //needs to be fixed - not required
     connection.query('SELECT * FROM employee', (err, results) => {
         if (err) throw err;
 
@@ -165,7 +174,7 @@ const removeEmployee = () => {
 
 }
 
-const addDepartment = () => {
+const addDepartment = () => { //required - DONE
     
 inquirer
 .prompt([
@@ -193,7 +202,33 @@ inquirer
 });
 }
 
-const addRole = () => {
+const viewDepartments = () => { //required - DONE
+
+    connection.query("SELECT * FROM department", (err, res) => {
+        if (err) throw err;
+        // console.log(res)
+        
+        console.table(res)
+            
+        
+        
+    })
+}
+
+const viewRoles = () => { //required - DONE
+
+    connection.query("SELECT * FROM roles", (err, res) => {
+        if (err) throw err;
+        // console.log(res)
+        
+        console.table(res)
+            
+        
+        
+    })
+}
+
+const addRole = () => { //required - DONE
     inquirer
 .prompt([
   {
@@ -232,7 +267,7 @@ const addRole = () => {
 });
 }
 
-const updateER = () => {
+const updateER = () => { //needs to be fixed - not required
     connection.query('SELECT * FROM employee', (err, results) => {
         if (err) throw err;
 
@@ -269,8 +304,11 @@ const updateER = () => {
 })
 }
 
+//HW done - BONUs - delete R,E,D - view employees by manager - update manager - view budget
+
 connection.connect((err) => {
     if (err) throw err;
+
     start()
     
   })
