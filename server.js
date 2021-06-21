@@ -2,6 +2,7 @@ const mysql = require('mysql');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 const figlet = require('figlet');
+
 const connection = mysql.createConnection({
     host: 'localhost',
   
@@ -13,16 +14,20 @@ const connection = mysql.createConnection({
     database: 'employeetracker',
   });
 
-//   figlet('Hello World!!', function(err, data) {
-//     if (err) {
-//         console.log('Something went wrong...');
-//         console.dir(err);
-//         return;
-//     }
-//     console.log(data)
-// });
 
 const start = () => {
+
+    figlet('Hello World!!', function(err, data) {
+        if (err) {
+            console.log('Something went wrong...');
+            console.dir(err);
+            return;
+        }
+        console.log(data)
+    });
+    setTimeout(  () => {
+
+    
 
     
     inquirer
@@ -30,7 +35,7 @@ const start = () => {
         name: 'startMenu',
         type: 'list',
         message: 'What would like to do? (use arrow keys)',
-        choices: ['View All Employees', 'View All Departments', 'View All Roles', 'Add Employee', 'Remove Employee', 'Add Department', 'Add Role', 'EXIT'],
+        choices: ['View All Employees', 'View All Departments', 'View All Roles', 'Add Employee', 'Remove Employee', 'Add Department', 'Add Role', 'Update Employee', 'EXIT'],
       })
       .then((answer) => {
         
@@ -59,10 +64,15 @@ const start = () => {
             console.log("addR")
             addRole()
 
+        } else if (answer.startMenu === 'Update Employee') {
+            console.log("update")
+            updateER()
+
         } else {
           connection.end();
         }
       });
+    }, 100) 
 }
 
 const viewAll = () => {
@@ -73,7 +83,9 @@ const viewAll = () => {
         
         console.table(res)
             
-        
+            setTimeout(  () => {
+                start()
+            }, 100) 
         
     })
 
@@ -130,7 +142,7 @@ inquirer
     });
 }
 
-const removeEmployee = () => { //needs to be fixed - not required
+const removeEmployee = () => { //DONE
     connection.query('SELECT * FROM employee', (err, results) => {
         if (err) throw err;
 
@@ -150,23 +162,26 @@ const removeEmployee = () => { //needs to be fixed - not required
              }
          ])
          .then((answer) => {
-            console.log(answer)
-                results.forEach((employee) => {
-                    if (employee === answer) {
+
+            let array = answer.choice.split(" ")
+            console.log(array[0])
+                results.forEach(( {employeeID} ) => {
+                    console.log(employeeID, array[0])
+                    if (employeeID == array[0]) {
                         console.log("correct")
-                        // connection.query(
-                        // "DELETE FROM employee WHERE ?",
-                        // [
-                        //     {
-                        //         firstName: answer.choice
-                        //     }
-                        // ],
-                        // (error) => {
-                        //     if (error) throw err;
-                        //     console.log('employee deleted successfully');
-                        //     start();
-                        // }
-                        // )
+                        connection.query(
+                        "DELETE FROM employee WHERE ?",
+                        [
+                            {
+                                employeeID: array[0]
+                            }
+                        ],
+                        (error) => {
+                            if (error) throw err;
+                            console.log('employee deleted successfully');
+                            
+                        }
+                        )
                     }
                 }) 
             })
@@ -271,37 +286,54 @@ const updateER = () => { //needs to be fixed - not required
     connection.query('SELECT * FROM employee', (err, results) => {
         if (err) throw err;
 
+        inquirer
+         .prompt([
+             {
+                 name: "choice",
+                 type: "rawlist",
+                 choices() {
+                     const choiceArray = []
+                     results.forEach(({ firstName, lastName, employeeID, roleID, managerID }) => {
+                         choiceArray.push(employeeID +" "+ firstName +" "+ lastName +" "+ roleID +" "+ managerID)
+                     })
+                     return choiceArray
+                 },
+                 message: "What employee to update?"
+             },
+             {
+             name: "role",
+             type: "input",
+             message: "What role to add?"
+            }
+         ])
+         .then((answer) => {
 
-
-    inquirer
-    .prompt([
-      {
-        name: 'update',
-        type: 'input',
-        message: 'Which employee do you want to update roles for?',
-      },
-    ])
-
-
-    .then((answer) => {
-    
-      connection.query(
-        'UPDATE employee ',
-        
-        {
-          title: answer.roleName,
-          salary: answer.roleSalary,
-          departmentID: answer.roleDepartment
-        },
-        (err) => {
-          if (err) throw err;
-          console.log('The role was made successfully');
-          
-          start()
-        }
-      );
-    });
-})
+            let array = answer.choice.split(" ")
+            console.log(array[0])
+                results.forEach(( {employeeID} ) => {
+                    console.log(employeeID, array[0])
+                    if (employeeID == array[0]) {
+                        console.log("correct")
+                        connection.query(
+                        "UPDATE employee SET ? WHERE ?",
+                        [
+                            {
+                                roleID: answer.role,
+                            },
+                            {
+                                employeeID: array[0]
+                            },
+                        ],
+                        (error) => {
+                            if (error) throw err;
+                            console.log('employee updated successfully');
+                            
+                        }
+                        )
+                    }
+                }) 
+            })
+    })
 }
 
 //HW done - BONUs - delete R,E,D - view employees by manager - update manager - view budget
